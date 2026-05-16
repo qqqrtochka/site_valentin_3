@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAME — Видеомонтажёр</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Inter+Tight:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0e0e0e;
+  --surface: #161616;
+  --surface-hi: #1d1d1d;
+  --text: #f0ede5;
+  --text-dim: #8b8780;
+  --text-mute: #4a4742;
+  --accent: #e8c547;
+  --line: rgba(240, 237, 229, 0.08);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── NAV ── */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 48px;
+  transition: background 0.5s var(--ease), backdrop-filter 0.5s;
+}
+.nav.scrolled {
+  background: rgba(14, 14, 14, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-name {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+.nav-links {
+  display: flex;
+  gap: 36px;
+  list-style: none;
+}
+.nav-links a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 400;
+  transition: color 0.3s;
+}
+.nav-links a:hover { color: var(--text); }
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  height: 100vh;
+  min-height: 520px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+.hero-overlay-top {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 220px;
+  background: linear-gradient(to bottom, rgba(14,14,14,0.72), transparent);
+  z-index: 1;
+}
+.hero-overlay-bottom {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 360px;
+  background: linear-gradient(to top, rgba(14,14,14,0.96) 20%, rgba(14,14,14,0.5) 60%, transparent);
+  z-index: 1;
+}
+.hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 0 48px 52px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+.hero-text h1 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(40px, 5.5vw, 72px);
+  font-weight: 300;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  margin-bottom: 10px;
+}
+.hero-text p {
+  color: var(--text-dim);
+  font-size: 15px;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+}
+.hero-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.btn-mute {
+  background: rgba(14,14,14,0.55);
+  border: 1px solid rgba(240,237,229,0.12);
+  color: var(--text);
+  padding: 10px 18px;
+  border-radius: 40px;
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.35s var(--ease);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.btn-mute:hover {
+  background: rgba(240,237,229,0.1);
+  border-color: rgba(240,237,229,0.22);
+}
+.btn-mute svg { width: 14px; height: 14px; flex-shrink: 0; }
+.hero-scroll {
+  color: var(--text-dim);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: color 0.3s;
+  letter-spacing: 0.02em;
+}
+.hero-scroll:hover { color: var(--text); }
+
+/* ── ABOUT ── */
+.about {
+  padding: 128px 48px;
+  max-width: 920px;
+  margin: 0 auto;
+  text-align: center;
+}
+.section-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 36px;
+}
+.about-text {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(22px, 3.2vw, 36px);
+  font-weight: 300;
+  line-height: 1.38;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 52px;
+}
+.about-facts {
+  color: var(--text-dim);
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+}
+.about-facts .dot {
+  color: var(--text-mute);
+  margin: 0 14px;
+}
+
+/* ── WORKS ── */
+.works {
+  padding: 0 48px 128px;
+}
+.works-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 44px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.works-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(28px, 3vw, 42px);
+  font-weight: 300;
+  letter-spacing: -0.025em;
+}
+.works-count {
+  font-size: 13px;
+  color: var(--text-mute);
+  font-weight: 300;
+}
+.filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  margin-bottom: 44px;
+}
+.filter-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: color 0.3s;
+}
+.filter-btn::after {
+  content: '·';
+  color: var(--text-mute);
+  margin: 0 16px;
+}
+.filter-btn:last-child::after { display: none; }
+.filter-btn:hover { color: var(--text); }
+.filter-btn.active {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 5px;
+}
+
+/* ── GRID ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: dense;
+  gap: 10px;
+  align-items: start;
+}
+.card {
+  background: var(--surface);
+  border-radius: 3px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.5s var(--ease), background 0.35s;
+  position: relative;
+}
+.card:hover {
+  transform: scale(1.018);
+  background: var(--surface-hi);
+  z-index: 2;
+}
+.card[data-wide="2"] { grid-column: span 2; }
+.card-video-wrap {
+  position: relative;
+  overflow: hidden;
+}
+.card[data-ratio="16/9"]  .card-video-wrap { aspect-ratio: 16/9; }
+.card[data-ratio="9/16"]  .card-video-wrap { aspect-ratio: 9/16; }
+.card[data-ratio="1/1"]   .card-video-wrap { aspect-ratio: 1/1; }
+.card[data-ratio="4/3"]   .card-video-wrap { aspect-ratio: 4/3; }
+.card-video-wrap video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.card-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(14,14,14,0.75);
+  border: 1px solid rgba(240,237,229,0.12);
+  color: var(--text);
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 7px 14px;
+  border-radius: 40px;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.card:hover .card-badge { opacity: 1; transform: translateY(0); }
+.card-info {
+  padding: 14px 16px 16px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.card-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin-bottom: 2px;
+  line-height: 1.25;
+}
+.card-client {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 300;
+}
+.card-duration {
+  font-family: 'Courier New', 'Courier', monospace;
+  font-size: 11px;
+  color: var(--text-mute);
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+
+/* ── CONTACT ── */
+.contact {
+  padding: 128px 48px 96px;
+  border-top: 1px solid var(--line);
+  max-width: 860px;
+  margin: 0 auto;
+}
+.contact-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(38px, 5.5vw, 72px);
+  font-weight: 300;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 64px;
+}
+.contact-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.contact-link {
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 300;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  transition: color 0.35s var(--ease);
+}
+.contact-link:first-child { border-top: 1px solid var(--line); }
+.contact-link:hover { color: var(--text); }
+.contact-link-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  min-width: 90px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+/* ── FOOTER ── */
+footer {
+  padding: 28px 48px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+footer p {
+  font-size: 13px;
+  color: var(--text-mute);
+  font-weight: 300;
+}
+
+/* ── STICKY CTA ── */
+.sticky-cta {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 200;
+  background: var(--accent);
+  color: #0e0e0e;
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 14px 26px;
+  border-radius: 40px;
+  transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
+  box-shadow: 0 4px 28px rgba(0,0,0,0.45);
+  letter-spacing: 0.01em;
+}
+.sticky-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.55);
+}
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(6, 6, 6, 0.97);
+  display: flex;
+  align-items: stretch;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s var(--ease);
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s, color 0.3s;
+}
+.modal-close:hover { border-color: rgba(240,237,229,0.3); color: var(--text); }
+.modal-player {
+  flex: 1;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.modal-player iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+.modal-side {
+  width: 340px;
+  flex-shrink: 0;
+  padding: 72px 36px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  overflow-y: auto;
+  border-left: 1px solid var(--line);
+}
+.modal-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 26px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.modal-client-name {
+  font-size: 14px;
+  color: var(--text-dim);
+  font-weight: 300;
+}
+.modal-meta {
+  display: flex;
+  flex-direction: column;
+}
+.modal-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  gap: 12px;
+}
+.modal-meta-row:first-child { border-top: 1px solid var(--line); }
+.modal-meta-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.modal-meta-value {
+  font-size: 14px;
+  color: var(--text-dim);
+  font-weight: 300;
+  text-align: right;
+}
+.modal-desc {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text-dim);
+  font-weight: 300;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .nav { padding: 18px 24px; }
+  .hero-content { padding: 0 24px 44px; }
+  .about { padding: 88px 24px; }
+  .works { padding: 0 24px 88px; }
+  .contact { padding: 88px 24px 72px; }
+  footer { padding: 24px; }
+  .sticky-cta { bottom: 24px; right: 24px; }
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .card[data-wide="2"] { grid-column: span 2; }
+  .modal-side { width: 280px; padding: 60px 24px 32px; }
+}
+
+@media (max-width: 600px) {
+  .nav-links { display: none; }
+  .hero-text h1 { font-size: 34px; }
+  .hero-content { flex-direction: column; align-items: flex-start; gap: 20px; padding-bottom: 36px; }
+  .hero-controls { flex-direction: row; align-items: center; }
+  .about-text { font-size: 21px; }
+  .works-title { font-size: 26px; }
+  .grid { grid-template-columns: 1fr; gap: 8px; }
+  .card[data-wide="2"] { grid-column: span 1; }
+  .modal-overlay { flex-direction: column; }
+  .modal-player { height: 56vw; flex: none; }
+  .modal-side { width: 100%; border-left: none; border-top: 1px solid var(--line); padding: 28px 20px; }
+  .sticky-cta { bottom: 20px; right: 20px; }
+  .contact-title { font-size: 34px; }
+  .contact-link { font-size: 16px; gap: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .card { transition: background 0.2s; }
+  .card:hover { transform: none; }
+  .hero-video { display: none; }
+  .hero { background: #111; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav" aria-label="Основная навигация">
+  <a href="#" class="nav-name">NAME</a>
+  <ul class="nav-links">
+    <li><a href="#works">Работы</a></li>
+    <li><a href="#about">О себе</a></li>
+    <li><a href="#contact">Контакты</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" aria-label="Шоурил">
+  <video
+    class="hero-video"
+    id="heroVideo"
+    autoplay muted loop playsinline
+    preload="auto"
+    src="https://assets.mixkit.co/videos/preview/mixkit-going-down-a-curved-road-through-a-mountain-range-41576-large.mp4">
+  </video>
+  <div class="hero-overlay-top" aria-hidden="true"></div>
+  <div class="hero-overlay-bottom" aria-hidden="true"></div>
+  <div class="hero-content">
+    <div class="hero-text">
+      <h1>NAME</h1>
+      <p>Видеомонтажёр. Москва / удалённо.</p>
+    </div>
+    <div class="hero-controls">
+      <button class="btn-mute" id="muteBtn" aria-label="Включить звук">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+          <line x1="23" y1="9" x2="17" y2="15"/>
+          <line x1="17" y1="9" x2="23" y2="15"/>
+        </svg>
+        Без звука
+      </button>
+      <a href="#works" class="hero-scroll" aria-label="Перейти к работам">↓ Работы</a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="section-label">Кто я</div>
+  <p class="about-text">
+    Монтирую видео, которое смотрят до конца. Работаю с брендами, артистами и теми, кто хочет рассказать историю — коротко в рилсах или развёрнуто в фильме на 10 минут.
+  </p>
+  <p class="about-facts">
+    4 года<span class="dot">·</span>200+ проектов<span class="dot">·</span>Premiere<span class="dot">·</span>DaVinci<span class="dot">·</span>After Effects
+  </p>
+</section>
+
+<!-- WORKS -->
+<section class="works" id="works">
+  <div class="works-header">
+    <h2 class="works-title">Избранные работы</h2>
+    <span class="works-count" id="worksCount">8 проектов</span>
+  </div>
+
+  <div class="filters" role="group" aria-label="Фильтр работ">
+    <button class="filter-btn active" data-filter="all">Все</button>
+    <button class="filter-btn" data-filter="widescreen">Широкоформат</button>
+    <button class="filter-btn" data-filter="reels">Рилсы</button>
+    <button class="filter-btn" data-filter="ad">Реклама</button>
+    <button class="filter-btn" data-filter="wedding">Свадьбы</button>
+  </div>
+
+  <div class="grid" id="grid">
+
+    <!-- 1: wide 16:9, span 2 -->
+    <article class="card"
+      data-wide="2" data-ratio="16/9" data-cat="widescreen"
+      data-title="Горизонт" data-client="Сбер" data-year="2024"
+      data-role="Монтаж + цвет" data-duration="12:30"
+      data-desc="Корпоративный документальный фильм о цифровой трансформации. Задача — показать людей за технологиями, не превратив это в рекламу. Три недели съёмок, два месяца монтажа и цветокоррекции."
+      data-embed="https://www.youtube.com/embed/dQw4w9WgXcQ"
+      tabindex="0" role="button" aria-label="Открыть: Горизонт">
+      <div class="card-video-wrap">
+        <video autoplay muted loop playsinline preload="none"
+          data-src="https://assets.mixkit.co/videos/preview/mixkit-going-down-a-curved-road-through-a-mountain-range-41576-large.mp4"
+          poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Crect fill='%23161616' width='16' height='9'/%3E%3C/svg%3E">
+        </video>
+        <div class="card-badge" aria-hidden="true">Смотреть полностью</div>
+      </div>
+      <div class="card-info">
+        <div>
+          <div class="card-title">Горизонт</div>
+          <div class="card-client">Сбер</div>
+        </div>
+        <div class="card-duration">12:30</div>
+      </div>
+    </article>
+
+    <!-- 2: portrait 9:16 -->
+    <article class="card"
+      data-ratio="9/16" data-cat="reels"
+      data-title="Рилс: FOLK Studio" data-client="FOLK Studio" data-year="2024"
+      data-role="Монтаж + графика" data-duration="0:28"
+      data-desc="Продуктовый рилс для бренда одежды. Нужно передать фактуру ткани и атмосферу минимализма в 30 секундах — без единого стоп-кадра."
+      data-embed="https://www.youtube.com/embed/dQw4w9WgXcQ"
+      tabindex="0" role="button" aria-label="Открыть: Рилс: FOLK Studio">
+      <div class="card-video-wrap">
+        <video autoplay muted loop playsinline preload="none"
+          data-src="https://assets.mixkit.co/videos/preview/mixkit-daytime-city-traffic-aerial-view-56-large.mp4"
+          poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 16'%3E%3Crect fill='%23161616' width='9' height='16'/%3E%3C/svg%3E">
+        </video>
+        <div class="card-badge" aria-hidden="true">Смотреть полностью</div>
+      </div>
+      <div class="card-info">
+        <div>
+          <div class="card-title">Рилс: FOLK Studio</div>
+          <div class="card-client">FOLK Studio</div>
+        </div>
+        <div class="card-duration">0:28</div>
+      </div>
+    </article>
+
+    <!-- 3: 16:9, 1 col -->
+    <article class="card"
+      data-ratio="16/9" data-cat="widescreen"
+      data-title="Северный ветер" data-client="Noize MC" data-year="2023"
+      data-role="Монтаж" data-duration="3:45"
+      data-desc="Клип для московского артиста. Три локации за 48 часов съёмок. Смонтированы полная версия и радио-эдит."
+      data-embed="https://www.youtube.com/embed/dQw4w9WgXcQ"
+      tabindex="0" role="button" aria-label="Открыть: Северный ветер">
+      <div class="card-video-wrap">
+        <video autoplay muted loop playsinline preload="none"
+          data-src="https://assets.mixkit.co/videos/preview/mixkit-white-sand-beach-and-clear-water-1017-large.mp4"
+          poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Crect fill='%23161616' width='16' height='9'/%3E%3C/svg%3E">
+        </video>
+        <div class="card-badge" aria-hidden="true">Смотреть полностью</div>
+      </div>
+      <div class="card-info">
+        <div>
+          <div class="card-title">Северный ветер</div>
+          <div class="card-client">Noize MC</div>
+        </div>
+        <div class="card-duration">3:45</div>
+      </div>
+    </article>
+
+    <!-- 4: 1:1 -->
+    <article class="card"
+      data-ratio="1/1" data-cat="wedding"
+      data-title="Свадьба в Сочи" data-client="Частный заказ" data-year="2024"
+      data-role="Монтаж" data-duration="5:30"
+      data-desc="Свадебный фильм в квадратном формате — специально под нарезку для Instagram. Тёплая цветокоррекция, акцент на эмоции, минимум постановки."
+      data-embed="https://www.youtube.com/embed/dQw4w9WgXcQ"
+      tabindex="0" role="button" aria-label="Открыть: Свадьба в Сочи">
+      <div class="card-video-wrap">
+        <video autoplay muted loop playsinline preload="none"
+          data-src="https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-waves-splashing-on-rocky-shore-1118-large.mp4"
+          poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect fill='%23161616' width='1' height='1'/%3E%3C/svg%3E">
+        </video>
+        <div class="card-badge" aria-hidden="true">Смотреть полностью</div>
+      </div>
+      <div class="card-info">
+        <div>
+          <div class="card-title">Свадьба в Сочи</div>
+          <div class="card-client">Частный заказ</div>
+        </div>
+        <div class="card-duration">5:30</div>
+      </div>
+    </article>
+
+    <!-- 5: wide 16:9, span 2 -->
+    <article class="card"
+      data-wide="2" data-ratio="16/9" data-cat="ad"
+      data-title="Вкус лета" data-client="Фруктовый Сад" data-year="2024"
+      data-role="Монтаж + цвет" data-duration="0:45"
+      data-desc="Рекламный ролик для федерального запуска. Дедлайн три дня. 240 исходных клипов — финал 45 секунд с анимированной графикой."
+      data-embed="https://www.youtube.com/embed/dQw4w9WgXcQ"
+      tabindex="0" role="button" aria-label="Открыть: Вкус лета">
+      <div class="card-video-wrap">
+        <video autoplay muted loop playsinline preload="none"
+          data-src="https://assets.mixkit.co/videos/preview/mixkit-going-down-a-curved-road-through-a-mountain-range-41576-large.mp4"
+          poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Crect fill='%23161616' width='16' height='9'/%3E%3C/svg%3E">
+        </video>
+        <div class="card-badge" aria-hidden="true">Смотреть полностью</div>
+      </div>
+      <div class="card-info">
+        <div>
+          <div class="card-title">Вкус лета</div>
+          <div class="card-client">Фруктовый Сад</div>
+        </div>
+        <div class="card-duration">0:45</div>
+      </div>
+    </article>
+
+    <!-- 6: portrait 9:16 -->
+    <article class="card"
+      data-ratio="9/16" data-cat="reels"
+      data-title="Тбилиси. 72 часа" data-client="Personal brand" data-year="2023"
+      data-role="Монтаж" data-duration="0:32"
+      data-desc="Тревел-рилс о поездке в Тбилиси. Снято на iPhone, смонтировано в DaVinci Resolve. Два миллиона просмотров за первую неделю."
+      data-embed="https://www.youtube.com/embed/dQw4w9WgXcQ"
+      tabindex="0" role="button" aria-label="Открыть: Тбилиси. 72 часа">
+      <div class="card-video-wrap">
+        <video autoplay muted loop playsinline preload="none"
+          data-src="https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-waves-splashing-on-rocky-shore-1118-large.mp4"
+          poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 16'%3E%3Crect fill='%23161616' width='9' height='16'/%3E%3C/svg%3E">
+        </video>
+        <div class="card-badge" aria-hidden="true">Смотреть полностью</div>
+      </div>
+      <div class="card-info">
+        <div>
+          <div class="card-title">Тбилиси. 72 часа</div>
+          <div class="card-client">Personal brand</div>
+        </div>
+        <div class="card-duration">0:32</div>
+      </div>
+    </article>
+
+    <!-- 7: wide 16:9, span 2 -->
+    <article class="card"
+      data-wide="2" data-ratio="16/9" data-cat="widescreen"
+      data-title="Мастера" data-client="Ремесло / Культура" data-year="2023"
+      data-role="Монтаж + цвет + звук" data-duration="18:00"
+      data-desc="Документальный фильм о российских мастерах ручного труда. Пять героев, три месяца съёмок, одна история о том, зачем делать руками то, что давно делают машины."
+      data-embed="https://www.youtube.com/embed/dQw4w9WgXcQ"
+      tabindex="0" role="button" aria-label="Открыть: Мастера">
+      <div class="card-video-wrap">
+        <video autoplay muted loop playsinline preload="none"
+          data-src="https://assets.mixkit.co/videos/preview/mixkit-daytime-city-traffic-aerial-view-56-large.mp4"
+          poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Crect fill='%23161616' width='16' height='9'/%3E%3C/svg%3E">
+        </video>
+        <div class="card-badge" aria-hidden="true">Смотреть полностью</div>
+      </div>
+      <div class="card-info">
+        <div>
+          <div class="card-title">Мастера</div>
+          <div class="card-client">Ремесло / Культура</div>
+        </div>
+        <div class="card-duration">18:00</div>
+      </div>
+    </article>
+
+    <!-- 8: 4:3 -->
+    <article class="card"
+      data-ratio="4/3" data-cat="wedding"
+      data-title="Свадьба Кирилла и Маши" data-client="Частный заказ" data-year="2024"
+      data-role="Монтаж + цвет" data-duration="8:15"
+      data-desc="Полнометражный свадебный фильм. Дальневосточная природа, кинематографическая цветокоррекция под плёнку Kodak 5219."
+      data-embed="https://www.youtube.com/embed/dQw4w9WgXcQ"
+      tabindex="0" role="button" aria-label="Открыть: Свадьба Кирилла и Маши">
+      <div class="card-video-wrap">
+        <video autoplay muted loop playsinline preload="none"
+          data-src="https://assets.mixkit.co/videos/preview/mixkit-white-sand-beach-and-clear-water-1017-large.mp4"
+          poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 3'%3E%3Crect fill='%23161616' width='4' height='3'/%3E%3C/svg%3E">
+        </video>
+        <div class="card-badge" aria-hidden="true">Смотреть полностью</div>
+      </div>
+      <div class="card-info">
+        <div>
+          <div class="card-title">Свадьба Кирилла и Маши</div>
+          <div class="card-client">Частный заказ</div>
+        </div>
+        <div class="card-duration">8:15</div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact" aria-label="Контакты">
+  <h2 class="contact-title">Есть проект — давайте обсудим.</h2>
+  <div class="contact-links">
+    <a href="mailto:hello@name.ru" class="contact-link">
+      <span class="contact-link-label">Email</span>
+      hello@name.ru
+    </a>
+    <a href="https://t.me/name" class="contact-link" target="_blank" rel="noopener noreferrer">
+      <span class="contact-link-label">Telegram</span>
+      @name
+    </a>
+    <a href="https://instagram.com/name" class="contact-link" target="_blank" rel="noopener noreferrer">
+      <span class="contact-link-label">Instagram</span>
+      @name
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 NAME · Сделано с заботой</p>
+</footer>
+
+<!-- STICKY CTA -->
+<a href="https://t.me/name" class="sticky-cta" target="_blank" rel="noopener noreferrer" aria-label="Написать в Telegram">
+  Написать
+</a>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-label="Просмотр работы">
+  <button class="modal-close" id="modalClose" aria-label="Закрыть">×</button>
+  <div class="modal-player" id="modalPlayer">
+    <iframe id="modalFrame" src="" allowfullscreen
+      allow="autoplay; fullscreen; picture-in-picture" title="Видео работы">
+    </iframe>
+  </div>
+  <aside class="modal-side" id="modalSide">
+    <div>
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-client-name" id="modalClientName"></div>
+    </div>
+    <div class="modal-meta" id="modalMeta"></div>
+    <p class="modal-desc" id="modalDesc"></p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── NAV scroll state ──
+  const nav = document.getElementById('nav');
+  let ticking = false;
+  window.addEventListener('scroll', function () {
+    if (!ticking) {
+      requestAnimationFrame(function () {
+        nav.classList.toggle('scrolled', window.scrollY > 60);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+
+  // ── Hero mute toggle ──
+  const heroVideo = document.getElementById('heroVideo');
+  const muteBtn = document.getElementById('muteBtn');
+
+  if (prefersReducedMotion) {
+    heroVideo.pause();
+  }
+
+  const svgMuted = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+  const svgSound = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+
+  muteBtn.addEventListener('click', function () {
+    heroVideo.muted = !heroVideo.muted;
+    if (heroVideo.muted) {
+      muteBtn.innerHTML = svgMuted + ' Без звука';
+      muteBtn.setAttribute('aria-label', 'Включить звук');
+    } else {
+      heroVideo.play().catch(function () {});
+      muteBtn.innerHTML = svgSound + ' Со звуком';
+      muteBtn.setAttribute('aria-label', 'Выключить звук');
+    }
+  });
+
+  // ── Lazy video loading ──
+  var allCardVideos = document.querySelectorAll('.card video[data-src]');
+
+  if (!prefersReducedMotion && 'IntersectionObserver' in window) {
+    var videoObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          var v = entry.target;
+          if (!v.src) {
+            v.src = v.dataset.src;
+            v.load();
+            v.play().catch(function () {});
+          }
+          videoObserver.unobserve(v);
+        }
+      });
+    }, { rootMargin: '160px 0px' });
+
+    allCardVideos.forEach(function (v) { videoObserver.observe(v); });
+  } else {
+    allCardVideos.forEach(function (v) {
+      v.removeAttribute('autoplay');
+    });
+  }
+
+  // Hover: skip to a different fragment of the video
+  document.querySelectorAll('.card').forEach(function (card) {
+    if (prefersReducedMotion) return;
+    card.addEventListener('mouseenter', function () {
+      var v = card.querySelector('video');
+      if (v && v.readyState >= 2 && v.duration > 1) {
+        v.currentTime = v.duration * 0.35;
+      }
+    });
+  });
+
+  // ── Filters ──
+  var filterBtns = document.querySelectorAll('.filter-btn');
+  var cards = Array.from(document.querySelectorAll('.card'));
+  var worksCount = document.getElementById('worksCount');
+  var activeFilter = 'all';
+
+  filterBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (btn.dataset.filter === activeFilter) return;
+      activeFilter = btn.dataset.filter;
+
+      filterBtns.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+
+      var visible = 0;
+
+      cards.forEach(function (card) {
+        var show = activeFilter === 'all' || card.dataset.cat === activeFilter;
+        if (show) visible++;
+
+        if (show) {
+          card.style.display = '';
+          card.style.opacity = '0';
+          card.style.transition = 'opacity 0.3s ease';
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              card.style.opacity = '1';
+            });
+          });
+        } else {
+          card.style.transition = 'opacity 0.3s ease';
+          card.style.opacity = '0';
+          var captured = card;
+          setTimeout(function () {
+            if (activeFilter !== 'all' && captured.dataset.cat !== activeFilter) {
+              captured.style.display = 'none';
+            }
+          }, 310);
+        }
+      });
+
+      worksCount.textContent = visible + ' ' + pluralProjects(visible);
+    });
+  });
+
+  function pluralProjects(n) {
+    if (n % 10 === 1 && n % 100 !== 11) return 'проект';
+    if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return 'проекта';
+    return 'проектов';
+  }
+
+  // ── Modal ──
+  var modal = document.getElementById('modal');
+  var modalClose = document.getElementById('modalClose');
+  var modalFrame = document.getElementById('modalFrame');
+  var modalTitle = document.getElementById('modalTitle');
+  var modalClientName = document.getElementById('modalClientName');
+  var modalMeta = document.getElementById('modalMeta');
+  var modalDesc = document.getElementById('modalDesc');
+  var previousFocus = null;
+
+  function openModal(card) {
+    previousFocus = document.activeElement;
+    var d = card.dataset;
+    modalTitle.textContent = d.title || '';
+    modalClientName.textContent = d.client || '';
+    modalDesc.textContent = d.desc || '';
+
+    var metaItems = [
+      ['Год', d.year],
+      ['Роль', d.role],
+      ['Длительность', d.duration],
+    ];
+    modalMeta.innerHTML = metaItems
+      .filter(function (item) { return item[1]; })
+      .map(function (item) {
+        return '<div class="modal-meta-row">' +
+          '<span class="modal-meta-label">' + item[0] + '</span>' +
+          '<span class="modal-meta-value">' + item[1] + '</span>' +
+          '</div>';
+      }).join('');
+
+    if (d.embed) {
+      modalFrame.src = d.embed + '?autoplay=1&rel=0&modestbranding=1';
+    }
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    modalClose.focus();
+  }
+
+  function closeModal() {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+    setTimeout(function () { modalFrame.src = ''; }, 450);
+    if (previousFocus) previousFocus.focus();
+  }
+
+  cards.forEach(function (card) {
+    card.addEventListener('click', function () { openModal(card); });
+    card.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openModal(card);
+      }
+    });
+  });
+
+  modalClose.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal) closeModal();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  });
+
+})();
+</script>
+</body>
+</html>
